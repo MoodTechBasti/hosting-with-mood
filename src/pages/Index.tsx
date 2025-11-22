@@ -2,6 +2,10 @@ import { useState } from "react";
 import { Hero } from "@/components/Hero";
 import { WizardProgress } from "@/components/WizardProgress";
 import { Step1 } from "@/components/wizard/Step1";
+import { Step2 } from "@/components/wizard/Step2";
+import { Step3 } from "@/components/wizard/Step3";
+import { Step4 } from "@/components/wizard/Step4";
+import { Step5 } from "@/components/wizard/Step5";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ProjectData } from "@/types/wizard";
@@ -64,6 +68,24 @@ const Index = () => {
                projectData.step1.targetAudience &&
                projectData.step1.mainGoal &&
                projectData.step1.paymentModel;
+      case 2:
+        return projectData.step2.techType.length > 0 &&
+               projectData.step2.dataProcessing &&
+               projectData.step2.database;
+      case 3:
+        return projectData.step3.monthlyVisitors &&
+               projectData.step3.trafficSources.length > 0 &&
+               projectData.step3.downtimeTolerance &&
+               projectData.step3.performanceNeed;
+      case 4:
+        return projectData.step4.hostingBudget &&
+               projectData.step4.contractOwner &&
+               projectData.step4.maintenanceResponsibility;
+      case 5:
+        return projectData.step5.dataProtectionLevel &&
+               projectData.step5.serverLocationPreference &&
+               projectData.step5.growthPotential &&
+               projectData.step5.projectLifetime;
       default:
         return true;
     }
@@ -86,24 +108,28 @@ const Index = () => {
             />
           )}
           {currentStep === 2 && (
-            <div className="text-center py-20">
-              <p className="text-muted-foreground">Schritt 2 wird implementiert...</p>
-            </div>
+            <Step2
+              data={projectData.step2}
+              onChange={(step2) => setProjectData({ ...projectData, step2 })}
+            />
           )}
           {currentStep === 3 && (
-            <div className="text-center py-20">
-              <p className="text-muted-foreground">Schritt 3 wird implementiert...</p>
-            </div>
+            <Step3
+              data={projectData.step3}
+              onChange={(step3) => setProjectData({ ...projectData, step3 })}
+            />
           )}
           {currentStep === 4 && (
-            <div className="text-center py-20">
-              <p className="text-muted-foreground">Schritt 4 wird implementiert...</p>
-            </div>
+            <Step4
+              data={projectData.step4}
+              onChange={(step4) => setProjectData({ ...projectData, step4 })}
+            />
           )}
           {currentStep === 5 && (
-            <div className="text-center py-20">
-              <p className="text-muted-foreground">Schritt 5 wird implementiert...</p>
-            </div>
+            <Step5
+              data={projectData.step5}
+              onChange={(step5) => setProjectData({ ...projectData, step5 })}
+            />
           )}
         </div>
 
@@ -124,10 +150,10 @@ const Index = () => {
 
           <Button
             onClick={handleNext}
-            disabled={!isStepValid() || currentStep === totalSteps}
+            disabled={!isStepValid()}
             className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow-cyan"
           >
-            Weiter
+            {currentStep === totalSteps ? "Empfehlungen anzeigen" : "Weiter"}
             <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
         </div>
