@@ -1,14 +1,14 @@
-import { ProjectData, HostingRecommendation, DecisionResult } from "@/types/wizard";
+import { ProjectData, HostingRecommendation, DecisionResult, CategoryScore as ExportedCategoryScore } from "@/types/wizard";
 import { hostingCategories, HostingCategory } from "./hostingCategories";
 
-interface CategoryScore {
+interface InternalCategoryScore {
   categoryId: string;
   score: number;
   reasons: string[];
 }
 
 export class ScoringEngine {
-  private scores: Map<string, CategoryScore> = new Map();
+  private scores: Map<string, InternalCategoryScore> = new Map();
 
   constructor(private projectData: ProjectData) {
     // Initialize all categories with 50 base score
@@ -364,6 +364,17 @@ export class ScoringEngine {
       return this.createRecommendation(category, score);
     });
 
+    // Export all category scores for visualization
+    const categoryScores: ExportedCategoryScore[] = Array.from(this.scores.values()).map(score => {
+      const category = hostingCategories.find(c => c.id === score.categoryId)!;
+      return {
+        categoryId: category.id,
+        categoryName: category.name,
+        score: score.score,
+        normalizedScore: Math.round(score.score)
+      };
+    });
+
     return {
       recommendations,
       rejectedCategories: rejectedCategories.map(score => {
@@ -375,11 +386,12 @@ export class ScoringEngine {
           whenUseful: this.generateWhenUseful(category)
         };
       }),
-      projectSummary: this.generateProjectSummary()
+      projectSummary: this.generateProjectSummary(),
+      categoryScores
     };
   }
 
-  private createRecommendation(category: HostingCategory, score: CategoryScore): HostingRecommendation {
+  private createRecommendation(category: HostingCategory, score: InternalCategoryScore): HostingRecommendation {
     return {
       categoryId: category.id,
       categoryName: category.name,
@@ -393,7 +405,7 @@ export class ScoringEngine {
     };
   }
 
-  private generateExplanation(category: HostingCategory, score: CategoryScore): string {
+  private generateExplanation(category: HostingCategory, score: InternalCategoryScore): string {
     const topReasons = score.reasons.slice(0, 3).map(r => r.split(': ')[1]);
     return `${category.description} Score: ${Math.round(score.score)}/100. Hauptgründe: ${topReasons.join(', ')}.`;
   }
@@ -435,7 +447,7 @@ export class ScoringEngine {
     return implementations[category.id] || "Individuelle Implementierung erforderlich";
   }
 
-  private generateRejectionReason(category: HostingCategory, score: CategoryScore): string {
+  private generateRejectionReason(category: HostingCategory, score: InternalCategoryScore): string {
     const negativeReasons = score.reasons.filter(r => r.startsWith('-'));
     if (negativeReasons.length > 0) {
       return negativeReasons[0].split(': ')[1];

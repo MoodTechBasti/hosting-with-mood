@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { RecommendationCard } from "./results/RecommendationCard";
 import { RejectedCategories } from "./results/RejectedCategories";
+import { CategoryScoresChart } from "./results/CategoryScoresChart";
 import { Download, RotateCcw, FileText, Share2 } from "lucide-react";
 import logo from "@/assets/logo-horizontal.svg";
 import { toast } from "sonner";
@@ -108,8 +109,15 @@ export const ResultsPage = ({ result, onRestart }: ResultsPageProps) => {
           </Button>
         </div>
 
+        {/* Category Scores Chart */}
+        {result.categoryScores && result.categoryScores.length > 0 && (
+          <div className="animate-fade-in-up delay-300">
+            <CategoryScoresChart categoryScores={result.categoryScores} />
+          </div>
+        )}
+
         {/* Recommendations */}
-        <div className="space-y-6 animate-fade-in-up delay-300">
+        <div className="space-y-6 animate-fade-in-up delay-400">
           <h2 className="text-2xl font-bold text-foreground text-center">
             Top 3 Empfehlungen
           </h2>
@@ -125,12 +133,45 @@ export const ResultsPage = ({ result, onRestart }: ResultsPageProps) => {
         </div>
 
         {/* Rejected Categories */}
-        <div className="animate-fade-in-up delay-400">
+        <div className="animate-fade-in-up delay-500">
           <RejectedCategories categories={result.rejectedCategories} />
         </div>
 
+        {/* Researched Prices (if available) */}
+        {result.researchedPrices && result.researchedPrices.length > 0 && (
+          <Card className="p-6 bg-card/50 border-border/50 backdrop-blur-sm animate-fade-in-up delay-600">
+            <h3 className="text-xl font-bold text-foreground mb-4">
+              🔍 Recherchierte Aktuelle Preise
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {result.researchedPrices.map((price, idx) => (
+                <div key={idx} className="p-4 rounded-lg bg-muted/20 border border-border">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <div className="font-semibold text-foreground">{price.provider}</div>
+                      <div className="text-xs text-muted-foreground">{price.categoryId}</div>
+                    </div>
+                    <div className="text-sm text-primary font-semibold">{price.currentPrice}</div>
+                  </div>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    Quelle: <span className="text-foreground">{price.source}</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Stand: {new Date(price.lastChecked).toLocaleDateString("de-DE")}
+                  </div>
+                  {price.notes && (
+                    <div className="text-xs text-muted-foreground mt-2 italic">
+                      {price.notes}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
         {/* Footer Note */}
-        <Card className="p-6 bg-card/30 border-border/50 backdrop-blur-sm text-center animate-fade-in-up delay-500">
+        <Card className="p-6 bg-card/30 border-border/50 backdrop-blur-sm text-center animate-fade-in-up delay-700">
           <p className="text-sm text-muted-foreground">
             <strong className="text-foreground">Wichtiger Hinweis:</strong> Diese Empfehlungen basieren auf
             Ihren Angaben und allgemeinen Best Practices. Kosten und Verfügbarkeit können variieren.

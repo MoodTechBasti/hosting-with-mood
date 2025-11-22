@@ -53,6 +53,13 @@ export interface HostingRecommendation {
   technicalImplementation: string;
 }
 
+export interface CategoryScore {
+  categoryId: string;
+  categoryName: string;
+  score: number;
+  normalizedScore: number; // 0-100 für Visualisierung
+}
+
 export interface DecisionResult {
   recommendations: HostingRecommendation[];
   rejectedCategories: {
@@ -63,6 +70,7 @@ export interface DecisionResult {
   }[];
   projectSummary: string;
   researchedPrices?: PriceResearchResult[];
+  categoryScores?: CategoryScore[]; // Alle Kategorie-Scores für Visualisierung
 }
 
 export interface PriceResearchResult {
