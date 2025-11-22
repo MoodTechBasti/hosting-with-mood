@@ -16,8 +16,11 @@ import { calculateRecommendations } from "@/lib/scoringEngine";
 import { StorageService } from "@/lib/storageService";
 import { researchProviderPrices } from "@/lib/priceResearch";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 const Index = () => {
+  const { t } = useLanguage();
   const [view, setView] = useState<"hero" | "wizard" | "results" | "saved" | "comparison">("hero");
   const [currentStep, setCurrentStep] = useState(1);
   const [result, setResult] = useState<DecisionResult | null>(null);
@@ -62,19 +65,19 @@ const Index = () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       // Generate recommendations
-      toast.info("Generiere Empfehlungen...");
+      toast.info(t('toast.generating'));
       const recommendations = calculateRecommendations(projectData);
       
       // Research current prices with LIVE web search
-      toast.info("🔍 Recherchiere aktuelle Preise von Anbieter-Websites...");
+      toast.info(t('toast.researching'));
       try {
         // useRealSearch = true für echte Live-Recherche via Edge Function
         const priceResearch = await researchProviderPrices(recommendations.recommendations, true);
         recommendations.researchedPrices = priceResearch;
-        toast.success(`✅ ${priceResearch.length} Anbieter-Preise live recherchiert`);
+        toast.success(t('toast.researchSuccess').replace('{count}', priceResearch.length.toString()));
       } catch (error) {
         console.error("Preis-Recherche fehlgeschlagen:", error);
-        toast.error("⚠️ Preis-Recherche fehlgeschlagen, verwende Fallback-Daten");
+        toast.error(t('toast.researchError'));
       }
       
       setResult(recommendations);
@@ -88,7 +91,7 @@ const Index = () => {
         name: StorageService.generateAnalysisName(projectData)
       };
       StorageService.saveAnalysis(analysis);
-      toast.success("Analyse gespeichert");
+      toast.success(t('toast.saved'));
       
       setView("results");
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -191,6 +194,7 @@ const Index = () => {
   if (view === "saved") {
     return (
       <div className="min-h-screen bg-background py-12 px-4">
+        <LanguageToggle />
         <div className="max-w-6xl mx-auto">
           <Button
             variant="ghost"
@@ -198,7 +202,7 @@ const Index = () => {
             className="mb-6"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Zurück zur Startseite
+            {t('wizard.backToHome')}
           </Button>
           <SavedAnalyses onCompare={handleCompare} />
         </div>
@@ -217,6 +221,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background py-12 px-4">
+      <LanguageToggle />
       <div className="max-w-5xl mx-auto">
         <WizardProgress currentStep={currentStep} totalSteps={totalSteps} />
 
@@ -262,7 +267,7 @@ const Index = () => {
               className="border-border hover:bg-card/50"
             >
               <ArrowLeft className="mr-2 w-4 h-4" />
-              Zurück
+              {t('wizard.back')}
             </Button>
             
             <Button
@@ -271,12 +276,12 @@ const Index = () => {
               className="border-border hover:bg-card/50"
             >
               <History className="mr-2 w-4 h-4" />
-              Gespeicherte Analysen
+              {t('wizard.savedAnalyses')}
             </Button>
           </div>
 
           <div className="text-sm text-muted-foreground">
-            Schritt {currentStep} von {totalSteps}
+            {t('wizard.step')} {currentStep} {t('wizard.of')} {totalSteps}
           </div>
 
           <Button
@@ -284,7 +289,7 @@ const Index = () => {
             disabled={!isStepValid()}
             className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow-cyan"
           >
-            {currentStep === totalSteps ? "Empfehlungen anzeigen" : "Weiter"}
+            {currentStep === totalSteps ? t('wizard.showRecommendations') : t('wizard.next')}
             <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
         </div>
