@@ -1,1 +1,4 @@
 project_id = "yrbpeufhledeqxlifnwk"
+
+[functions.price-research]
+verify_jwt = false
