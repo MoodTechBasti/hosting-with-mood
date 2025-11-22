@@ -62,4 +62,22 @@ export interface DecisionResult {
     whenUseful: string;
   }[];
   projectSummary: string;
+  researchedPrices?: PriceResearchResult[];
+}
+
+export interface PriceResearchResult {
+  categoryId: string;
+  provider: string;
+  currentPrice: string;
+  source: string;
+  lastChecked: string;
+  notes?: string;
+}
+
+export interface SavedAnalysis {
+  id: string;
+  timestamp: number;
+  projectData: ProjectData;
+  result: DecisionResult;
+  name?: string;
 }

@@ -2,21 +2,26 @@ import { useState } from "react";
 import { Hero } from "@/components/Hero";
 import { WizardProgress } from "@/components/WizardProgress";
 import { ResultsPage } from "@/components/ResultsPage";
+import { SavedAnalyses } from "@/components/SavedAnalyses";
+import { ComparisonPage } from "@/components/ComparisonPage";
 import { Step1 } from "@/components/wizard/Step1";
 import { Step2 } from "@/components/wizard/Step2";
 import { Step3 } from "@/components/wizard/Step3";
 import { Step4 } from "@/components/wizard/Step4";
 import { Step5 } from "@/components/wizard/Step5";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { ProjectData, DecisionResult } from "@/types/wizard";
+import { ArrowLeft, ArrowRight, History } from "lucide-react";
+import { ProjectData, DecisionResult, SavedAnalysis } from "@/types/wizard";
 import { calculateRecommendations } from "@/lib/scoringEngine";
+import { StorageService } from "@/lib/storageService";
+import { researchProviderPrices } from "@/lib/priceResearch";
+import { toast } from "sonner";
 
 const Index = () => {
-  const [showWizard, setShowWizard] = useState(false);
-  const [showResults, setShowResults] = useState(false);
+  const [view, setView] = useState<"hero" | "wizard" | "results" | "saved" | "comparison">("hero");
   const [currentStep, setCurrentStep] = useState(1);
   const [result, setResult] = useState<DecisionResult | null>(null);
+  const [comparisonAnalyses, setComparisonAnalyses] = useState<SavedAnalysis[]>([]);
   const totalSteps = 5;
 
   const [projectData, setProjectData] = useState<ProjectData>({
@@ -51,22 +56,40 @@ const Index = () => {
     },
   });
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       // Generate recommendations
+      toast.info("Generiere Empfehlungen...");
       const recommendations = calculateRecommendations(projectData);
+      
+      // Research current prices (mock for now, but ready for web_search integration)
+      toast.info("Recherchiere aktuelle Preise...");
+      const priceResearch = await researchProviderPrices(recommendations.recommendations);
+      recommendations.researchedPrices = priceResearch;
+      
       setResult(recommendations);
-      setShowResults(true);
+      
+      // Save analysis
+      const analysis: SavedAnalysis = {
+        id: `analysis_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: Date.now(),
+        projectData,
+        result: recommendations,
+        name: StorageService.generateAnalysisName(projectData)
+      };
+      StorageService.saveAnalysis(analysis);
+      toast.success("Analyse gespeichert");
+      
+      setView("results");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const handleRestart = () => {
-    setShowWizard(false);
-    setShowResults(false);
+    setView("hero");
     setCurrentStep(1);
     setResult(null);
     setProjectData({
@@ -100,6 +123,12 @@ const Index = () => {
         projectLifetime: "",
       },
     });
+  };
+
+  const handleCompare = (analyses: SavedAnalysis[]) => {
+    setComparisonAnalyses(analyses);
+    setView("comparison");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handlePrevious = () => {
@@ -139,12 +168,44 @@ const Index = () => {
     }
   };
 
-  if (!showWizard) {
-    return <Hero onStartWizard={() => setShowWizard(true)} />;
+  if (view === "hero") {
+    return (
+      <Hero 
+        onStartWizard={() => setView("wizard")} 
+        onViewSaved={() => setView("saved")}
+      />
+    );
   }
 
-  if (showResults && result) {
+  if (view === "results" && result) {
     return <ResultsPage result={result} onRestart={handleRestart} />;
+  }
+
+  if (view === "saved") {
+    return (
+      <div className="min-h-screen bg-background py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <Button
+            variant="ghost"
+            onClick={() => setView("hero")}
+            className="mb-6"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Zurück zur Startseite
+          </Button>
+          <SavedAnalyses onCompare={handleCompare} />
+        </div>
+      </div>
+    );
+  }
+
+  if (view === "comparison") {
+    return (
+      <ComparisonPage
+        analyses={comparisonAnalyses}
+        onBack={() => setView("saved")}
+      />
+    );
   }
 
   return (
@@ -186,15 +247,26 @@ const Index = () => {
         </div>
 
         <div className="flex justify-between items-center mt-12">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 1}
-            className="border-border hover:bg-card/50"
-          >
-            <ArrowLeft className="mr-2 w-4 h-4" />
-            Zurück
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 1}
+              className="border-border hover:bg-card/50"
+            >
+              <ArrowLeft className="mr-2 w-4 h-4" />
+              Zurück
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={() => setView("saved")}
+              className="border-border hover:bg-card/50"
+            >
+              <History className="mr-2 w-4 h-4" />
+              Gespeicherte Analysen
+            </Button>
+          </div>
 
           <div className="text-sm text-muted-foreground">
             Schritt {currentStep} von {totalSteps}

@@ -1,12 +1,15 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, History } from "lucide-react";
 import logo from "@/assets/logo-horizontal.svg";
+import { StorageService } from "@/lib/storageService";
 
 interface HeroProps {
   onStartWizard: () => void;
+  onViewSaved?: () => void;
 }
 
-export const Hero = ({ onStartWizard }: HeroProps) => {
+export const Hero = ({ onStartWizard, onViewSaved }: HeroProps) => {
+  const savedCount = StorageService.getAllAnalyses().length;
   return (
     <section className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden">
       {/* Background Effects */}
@@ -67,13 +70,21 @@ export const Hero = ({ onStartWizard }: HeroProps) => {
             Jetzt starten
             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Button>
-          <Button 
-            variant="outline"
-            size="lg"
-            className="border-border hover:bg-card/50"
-          >
-            Mehr erfahren
-          </Button>
+          
+          {savedCount > 0 && onViewSaved && (
+            <Button 
+              onClick={onViewSaved}
+              variant="outline"
+              size="lg"
+              className="border-primary/30 hover:bg-primary/10 text-primary relative"
+            >
+              <History className="mr-2 w-5 h-5" />
+              Gespeicherte Analysen
+              <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-primary text-primary-foreground">
+                {savedCount}
+              </span>
+            </Button>
+          )}
         </div>
 
         {/* Trust Indicator */}
