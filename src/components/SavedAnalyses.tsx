@@ -7,6 +7,7 @@ import { SavedAnalysis } from "@/types/wizard";
 import { StorageService } from "@/lib/storageService";
 import { Clock, Trash2, Edit2, Check, X, GitCompare } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SavedAnalysesProps {
   onCompare: (analyses: SavedAnalysis[]) => void;
@@ -14,6 +15,7 @@ interface SavedAnalysesProps {
 }
 
 export const SavedAnalyses = ({ onCompare, onSelect }: SavedAnalysesProps) => {
+  const { t, language } = useLanguage();
   const [analyses, setAnalyses] = useState<SavedAnalysis[]>([]);
   const [selectedForCompare, setSelectedForCompare] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -31,7 +33,7 @@ export const SavedAnalyses = ({ onCompare, onSelect }: SavedAnalysesProps) => {
   const handleDelete = (id: string) => {
     StorageService.deleteAnalysis(id);
     loadAnalyses();
-    toast.success("Analyse gelöscht");
+    toast.success(t('saved.deleted'));
   };
 
   const handleStartEdit = (analysis: SavedAnalysis) => {
@@ -43,7 +45,7 @@ export const SavedAnalyses = ({ onCompare, onSelect }: SavedAnalysesProps) => {
     if (editName.trim()) {
       StorageService.updateAnalysisName(id, editName.trim());
       loadAnalyses();
-      toast.success("Name aktualisiert");
+      toast.success(t('saved.updated'));
     }
     setEditingId(null);
   };
@@ -59,7 +61,7 @@ export const SavedAnalyses = ({ onCompare, onSelect }: SavedAnalysesProps) => {
       newSelected.delete(id);
     } else {
       if (newSelected.size >= 3) {
-        toast.error("Maximal 3 Analysen können verglichen werden");
+        toast.error(t('saved.maxCompare'));
         return;
       }
       newSelected.add(id);
@@ -70,14 +72,14 @@ export const SavedAnalyses = ({ onCompare, onSelect }: SavedAnalysesProps) => {
   const handleCompare = () => {
     const selected = analyses.filter(a => selectedForCompare.has(a.id));
     if (selected.length < 2) {
-      toast.error("Mindestens 2 Analysen zum Vergleichen auswählen");
+      toast.error(t('saved.minCompare'));
       return;
     }
     onCompare(selected);
   };
 
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString("de-DE", {
+    return new Date(timestamp).toLocaleString(language === 'de' ? 'de-DE' : 'en-US', {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -89,9 +91,9 @@ export const SavedAnalyses = ({ onCompare, onSelect }: SavedAnalysesProps) => {
   if (analyses.length === 0) {
     return (
       <Card className="p-8 text-center bg-card/50 border-border/50 backdrop-blur-sm">
-        <p className="text-muted-foreground mb-4">Noch keine gespeicherten Analysen vorhanden</p>
+        <p className="text-muted-foreground mb-4">{t('saved.empty')}</p>
         <p className="text-sm text-muted-foreground">
-          Ihre Analysen werden automatisch gespeichert und hier angezeigt
+          {t('saved.emptyDesc')}
         </p>
       </Card>
     );
@@ -101,9 +103,9 @@ export const SavedAnalyses = ({ onCompare, onSelect }: SavedAnalysesProps) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Gespeicherte Analysen</h2>
+          <h2 className="text-2xl font-bold text-foreground">{t('saved.title')}</h2>
           <p className="text-sm text-muted-foreground">
-            {analyses.length} von {10} Analysen • Wählen Sie 2-3 für den Vergleich
+            {t('saved.compareInfo').replace('{total}', '10').replace(analyses.length.toString(), analyses.length.toString())}
           </p>
         </div>
         
@@ -113,7 +115,7 @@ export const SavedAnalyses = ({ onCompare, onSelect }: SavedAnalysesProps) => {
             className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow-cyan"
           >
             <GitCompare className="w-4 h-4 mr-2" />
-            {selectedForCompare.size} Analysen vergleichen
+            {t('saved.compare').replace('{count}', selectedForCompare.size.toString())}
           </Button>
         )}
       </div>
@@ -200,7 +202,7 @@ export const SavedAnalyses = ({ onCompare, onSelect }: SavedAnalysesProps) => {
                 <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
                   <div className="flex items-center gap-2 mb-1">
                     <Badge variant="outline" className="text-xs bg-primary/20 text-primary border-primary">
-                      Top-Empfehlung
+                      {t('saved.topRecommendation')}
                     </Badge>
                   </div>
                   <div className="text-sm font-medium text-foreground">{topRec.categoryName}</div>
@@ -212,12 +214,12 @@ export const SavedAnalyses = ({ onCompare, onSelect }: SavedAnalysesProps) => {
                 {/* Project Info */}
                 <div className="text-xs text-muted-foreground line-clamp-2">
                   {analysis.projectData.step1.projectType.join(", ")} • 
-                  Budget: {analysis.projectData.step4.hostingBudget}€
+                  {t('saved.budget')}: {analysis.projectData.step4.hostingBudget}€
                 </div>
 
                 {isSelected && (
                   <Badge className="w-full justify-center bg-primary/20 text-primary border-primary">
-                    Ausgewählt für Vergleich
+                    {t('saved.selected')}
                   </Badge>
                 )}
               </div>

@@ -2,6 +2,7 @@ import { WizardStep5 } from "@/types/wizard";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Lock, MapPin, TrendingUp, Calendar } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Step5Props {
   data: WizardStep5;
@@ -37,18 +38,48 @@ const projectLifetimes = [
 ];
 
 export const Step5 = ({ data, onChange }: Step5Props) => {
+  const { t } = useLanguage();
+  
+  const dataProtectionLevels = [
+    { value: "Standard", label: t('step5.protection.standard'), desc: t('step5.protection.standardDesc') },
+    { value: "Sensibel", label: t('step5.protection.sensitive'), desc: t('step5.protection.sensitiveDesc') },
+    { value: "Branche", label: t('step5.protection.industry'), desc: t('step5.protection.industryDesc') },
+    { value: "Unklar", label: t('step5.protection.unclear'), desc: t('step5.protection.unclearDesc') }
+  ];
+
+  const serverLocations = [
+    { value: "DE", label: t('step5.location.de'), flag: "🇩🇪" },
+    { value: "EU", label: t('step5.location.eu'), flag: "🇪🇺" },
+    { value: "Global", label: t('step5.location.global'), flag: "🌍" },
+    { value: "Egal", label: t('step5.location.any'), flag: "🤷" }
+  ];
+
+  const growthPotentials = [
+    { value: "Klein", label: t('step5.growthOptions.small'), desc: t('step5.growthOptions.smallDesc') },
+    { value: "Mittel", label: t('step5.growthOptions.medium'), desc: t('step5.growthOptions.mediumDesc') },
+    { value: "Hoch", label: t('step5.growthOptions.high'), desc: t('step5.growthOptions.highDesc') },
+    { value: "Unbekannt", label: t('step5.growthOptions.unknown'), desc: t('step5.growthOptions.unknownDesc') }
+  ];
+
+  const projectLifetimes = [
+    { value: "< 6 Monate", label: t('step5.lifetimeOptions.short'), icon: "⚡" },
+    { value: "6-24 Monate", label: t('step5.lifetimeOptions.medium'), icon: "📅" },
+    { value: "> 24 Monate", label: t('step5.lifetimeOptions.long'), icon: "🏗️" },
+    { value: "Unklar", label: t('step5.lifetimeOptions.unclear'), icon: "❓" }
+  ];
+
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Recht & Zukunft</h2>
-        <p className="text-muted-foreground">Compliance und langfristige Planung</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">{t('step5.title')}</h2>
+        <p className="text-muted-foreground">{t('step5.description')}</p>
       </div>
 
       <Card className="p-6 bg-card/50 border-border/50 backdrop-blur-sm space-y-6">
         <div className="space-y-4">
           <Label className="text-base font-medium flex items-center gap-2">
             <Lock className="w-5 h-5 text-primary" />
-            Datenschutz-Anforderungen
+            {t('step5.dataProtection')}
           </Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {dataProtectionLevels.map((level) => (
@@ -73,7 +104,7 @@ export const Step5 = ({ data, onChange }: Step5Props) => {
         <div className="space-y-4">
           <Label className="text-base font-medium flex items-center gap-2">
             <MapPin className="w-5 h-5 text-accent" />
-            Server-Standort-Priorität
+            {t('step5.serverLocation')}
           </Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {serverLocations.map((location) => (
@@ -99,7 +130,7 @@ export const Step5 = ({ data, onChange }: Step5Props) => {
           <div className="space-y-3">
             <Label className="text-base font-medium flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
-              Wachstumspotential
+              {t('step5.growth')}
             </Label>
             <div className="space-y-2">
               {growthPotentials.map((potential) => (
@@ -124,7 +155,7 @@ export const Step5 = ({ data, onChange }: Step5Props) => {
           <div className="space-y-3">
             <Label className="text-base font-medium flex items-center gap-2">
               <Calendar className="w-5 h-5 text-accent" />
-              Lebensdauer des Projekts
+              {t('step5.lifetime')}
             </Label>
             <div className="space-y-2">
               {projectLifetimes.map((lifetime) => (

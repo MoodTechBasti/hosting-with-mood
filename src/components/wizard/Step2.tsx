@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Info } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Step2Props {
   data: WizardStep2;
@@ -37,6 +38,34 @@ const databaseOptions = [
 ];
 
 export const Step2 = ({ data, onChange }: Step2Props) => {
+  const { t } = useLanguage();
+  
+  const techTypes = [
+    { key: 'static', label: t('step2.types.static') },
+    { key: 'cms', label: t('step2.types.cms') },
+    { key: 'framework', label: t('step2.types.framework') },
+    { key: 'backend', label: t('step2.types.backend') },
+    { key: 'nocode', label: t('step2.types.nocode') },
+    { key: 'mixed', label: t('step2.types.mixed') },
+    { key: 'unclear', label: t('step2.types.unclear') }
+  ];
+
+  const dataProcessingOptions = [
+    { key: 'none', label: t('step2.processing.none') },
+    { key: 'contact', label: t('step2.processing.contact') },
+    { key: 'accounts', label: t('step2.processing.accounts') },
+    { key: 'payments', label: t('step2.processing.payments') },
+    { key: 'sensitive', label: t('step2.processing.sensitive') },
+    { key: 'unclear', label: t('step2.processing.unclear') }
+  ];
+
+  const databaseOptions = [
+    { key: 'none', label: t('step2.database.none') },
+    { key: 'simple', label: t('step2.database.simple') },
+    { key: 'complex', label: t('step2.database.complex') },
+    { key: 'unclear', label: t('step2.database.unclear') }
+  ];
+
   const handleTechTypeToggle = (type: string) => {
     const newTypes = data.techType.includes(type)
       ? data.techType.filter(t => t !== type)
@@ -47,43 +76,43 @@ export const Step2 = ({ data, onChange }: Step2Props) => {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Technik & Daten</h2>
-        <p className="text-muted-foreground">Technische Details und Datenanforderungen</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">{t('step2.title')}</h2>
+        <p className="text-muted-foreground">{t('step2.description')}</p>
       </div>
 
       <Card className="p-6 bg-card/50 border-border/50 backdrop-blur-sm space-y-6">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <Label className="text-base font-medium">Code-/Technik-Art</Label>
+            <Label className="text-base font-medium">{t('step2.techType')}</Label>
             <Info className="w-4 h-4 text-muted-foreground" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {techTypes.map((type) => (
               <div
-                key={type}
+                key={type.key}
                 className={`
                   flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-all
-                  ${data.techType.includes(type)
+                  ${data.techType.includes(type.key)
                     ? 'border-primary bg-primary/10 shadow-glow-cyan'
                     : 'border-border hover:border-primary/50 bg-card/30'
                   }
                 `}
-                onClick={() => handleTechTypeToggle(type)}
+                onClick={() => handleTechTypeToggle(type.key)}
               >
                 <Checkbox
-                  checked={data.techType.includes(type)}
-                  onCheckedChange={() => handleTechTypeToggle(type)}
+                  checked={data.techType.includes(type.key)}
+                  onCheckedChange={() => handleTechTypeToggle(type.key)}
                 />
-                <span className="text-sm">{type}</span>
+                <span className="text-sm">{type.label}</span>
               </div>
             ))}
           </div>
         </div>
 
         <div className="space-y-3">
-          <Label className="text-base font-medium">Konkreter Tech-Stack (Optional)</Label>
+          <Label className="text-base font-medium">{t('step2.techStackLabel')}</Label>
           <Textarea
-            placeholder="z.B. Next.js + Node Backend, WordPress + WooCommerce, n8n + Webhook..."
+            placeholder={t('step2.techStackPlaceholder')}
             value={data.techStackDetails || ""}
             onChange={(e) => onChange({ ...data, techStackDetails: e.target.value })}
             className="min-h-[100px] bg-background/50 border-border resize-none"
@@ -92,42 +121,42 @@ export const Step2 = ({ data, onChange }: Step2Props) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-3">
-            <Label className="text-base font-medium">Datenverarbeitung</Label>
+            <Label className="text-base font-medium">{t('step2.dataProcessing')}</Label>
             <div className="space-y-2">
               {dataProcessingOptions.map((option) => (
                 <div
-                  key={option}
+                  key={option.key}
                   className={`
                     p-3 rounded-lg border cursor-pointer transition-all
-                    ${data.dataProcessing === option
+                    ${data.dataProcessing === option.key
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border hover:border-primary/50 bg-card/30'
                     }
                   `}
-                  onClick={() => onChange({ ...data, dataProcessing: option })}
+                  onClick={() => onChange({ ...data, dataProcessing: option.key })}
                 >
-                  <span className="text-sm">{option}</span>
+                  <span className="text-sm">{option.label}</span>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="space-y-3">
-            <Label className="text-base font-medium">Datenbankbedarf</Label>
+            <Label className="text-base font-medium">{t('step2.databaseNeed')}</Label>
             <div className="space-y-2">
               {databaseOptions.map((option) => (
                 <div
-                  key={option}
+                  key={option.key}
                   className={`
                     p-3 rounded-lg border cursor-pointer transition-all
-                    ${data.database === option
+                    ${data.database === option.key
                       ? 'border-accent bg-accent/10 text-accent'
                       : 'border-border hover:border-accent/50 bg-card/30'
                     }
                   `}
-                  onClick={() => onChange({ ...data, database: option })}
+                  onClick={() => onChange({ ...data, database: option.key })}
                 >
-                  <span className="text-sm">{option}</span>
+                  <span className="text-sm">{option.label}</span>
                 </div>
               ))}
             </div>

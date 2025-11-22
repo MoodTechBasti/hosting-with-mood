@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, DollarSign, Users, Server, TrendingUp } from "lucide-react";
 import logo from "@/assets/logo-horizontal.svg";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ComparisonPageProps {
   analyses: SavedAnalysis[];
@@ -11,8 +12,10 @@ interface ComparisonPageProps {
 }
 
 export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
+  const { t, language } = useLanguage();
+  
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString("de-DE", {
+    return new Date(timestamp).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US', {
       day: "2-digit",
       month: "2-digit",
       year: "numeric"
@@ -48,25 +51,25 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Zurück
+            {t('wizard.back')}
           </Button>
 
           <div className="text-center">
             <img src={logo} alt="MoodTech Solutions" className="h-12 mx-auto mb-4" />
             <h1 className="text-3xl md:text-4xl font-bold">
               <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Analysen-Vergleich
+                {t('comparison.title')}
               </span>
             </h1>
             <p className="text-muted-foreground mt-2">
-              Vergleichen Sie {analyses.length} Projekt-Analysen nebeneinander
+              {t('comparison.subtitle').replace('{count}', analyses.length.toString())}
             </p>
           </div>
         </div>
 
         {/* Timeline */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in-up delay-100">
-          {analyses.map((analysis, idx) => (
+              {analyses.map((analysis, idx) => (
             <Card key={analysis.id} className="p-4 bg-card/50 border-border/50 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-2">
                 <Badge variant="outline" className={
@@ -74,7 +77,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
                   idx === 1 ? "bg-accent/20 text-accent border-accent" :
                   "bg-muted/20"
                 }>
-                  Analyse {idx + 1}
+                  {t('comparison.analysis')} {idx + 1}
                 </Badge>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Calendar className="w-3 h-3" />
@@ -82,7 +85,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
                 </div>
               </div>
               <h3 className="font-semibold text-foreground text-sm">
-                {analysis.name || `Projekt ${idx + 1}`}
+                {analysis.name || `${t('comparison.analysis')} ${idx + 1}`}
               </h3>
             </Card>
           ))}
@@ -94,7 +97,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/20">
-                  <th className="p-4 text-left font-semibold text-foreground">Kriterium</th>
+                  <th className="p-4 text-left font-semibold text-foreground">{t('comparison.criteria')}</th>
                   {analyses.map((analysis, idx) => (
                     <th key={analysis.id} className="p-4 text-left">
                       <Badge variant="outline" className={
@@ -102,7 +105,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
                         idx === 1 ? "bg-accent/20 text-accent border-accent" :
                         "bg-muted/20"
                       }>
-                        Analyse {idx + 1}
+                        {t('comparison.analysis')} {idx + 1}
                       </Badge>
                     </th>
                   ))}
@@ -114,7 +117,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <Server className="w-4 h-4 text-primary" />
-                      <span className="font-medium text-foreground">Projekttyp</span>
+                      <span className="font-medium text-foreground">{t('comparison.projectType')}</span>
                     </div>
                   </td>
                   {metrics.map((m, idx) => (
@@ -129,7 +132,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <DollarSign className="w-4 h-4 text-accent" />
-                      <span className="font-medium text-foreground">Budget/Monat</span>
+                      <span className="font-medium text-foreground">{t('comparison.budgetMonth')}</span>
                     </div>
                   </td>
                   {metrics.map((m, idx) => (
@@ -144,7 +147,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4 text-primary" />
-                      <span className="font-medium text-foreground">Monatliche Besucher</span>
+                      <span className="font-medium text-foreground">{t('comparison.monthlyVisitors')}</span>
                     </div>
                   </td>
                   {metrics.map((m, idx) => (
@@ -159,7 +162,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-primary" />
-                      <span className="font-medium text-foreground">🏆 Top-Empfehlung</span>
+                      <span className="font-medium text-foreground">{t('comparison.topRecommendation')}</span>
                     </div>
                   </td>
                   {metrics.map((m, idx) => (
@@ -177,7 +180,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
                 {/* Cost Range */}
                 <tr className="hover:bg-muted/10 transition-colors">
                   <td className="p-4">
-                    <span className="font-medium text-foreground">Kostenrahmen</span>
+                    <span className="font-medium text-foreground">{t('comparison.costRange')}</span>
                   </td>
                   {metrics.map((m, idx) => (
                     <td key={idx} className="p-4 text-sm text-muted-foreground">
@@ -189,7 +192,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
                 {/* Complexity */}
                 <tr className="hover:bg-muted/10 transition-colors">
                   <td className="p-4">
-                    <span className="font-medium text-foreground">Komplexität</span>
+                    <span className="font-medium text-foreground">{t('comparison.complexity')}</span>
                   </td>
                   {metrics.map((m, idx) => (
                     <td key={idx} className="p-4">
@@ -198,7 +201,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
                         m.complexity === "mittel" ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" :
                         "bg-red-500/10 text-red-400 border-red-500/20"
                       }>
-                        {m.complexity === "niedrig" ? "Einfach" : m.complexity === "mittel" ? "Mittel" : "Komplex"}
+                        {m.complexity === "niedrig" ? t('comparison.simple') : m.complexity === "mittel" ? t('comparison.medium') : t('comparison.complex')}
                       </Badge>
                     </td>
                   ))}
@@ -207,7 +210,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
                 {/* Data Protection */}
                 <tr className="hover:bg-muted/10 transition-colors">
                   <td className="p-4">
-                    <span className="font-medium text-foreground">Datenschutz</span>
+                    <span className="font-medium text-foreground">{t('comparison.dataProtection')}</span>
                   </td>
                   {metrics.map((m, idx) => (
                     <td key={idx} className="p-4 text-sm text-muted-foreground">
@@ -219,7 +222,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
                 {/* Server Location */}
                 <tr className="hover:bg-muted/10 transition-colors">
                   <td className="p-4">
-                    <span className="font-medium text-foreground">Serverstandort</span>
+                    <span className="font-medium text-foreground">{t('comparison.serverLocation')}</span>
                   </td>
                   {metrics.map((m, idx) => (
                     <td key={idx} className="p-4 text-sm text-muted-foreground">
@@ -231,7 +234,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
                 {/* Growth Potential */}
                 <tr className="hover:bg-muted/10 transition-colors">
                   <td className="p-4">
-                    <span className="font-medium text-foreground">Wachstumspotential</span>
+                    <span className="font-medium text-foreground">{t('comparison.growth')}</span>
                   </td>
                   {metrics.map((m, idx) => (
                     <td key={idx} className="p-4 text-sm text-muted-foreground">
@@ -246,7 +249,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
 
         {/* Detailed Recommendations */}
         <div className="space-y-4 animate-fade-in-up delay-300">
-          <h2 className="text-2xl font-bold text-foreground">Detaillierte Empfehlungen</h2>
+          <h2 className="text-2xl font-bold text-foreground">{t('comparison.detailedRecs')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {analyses.map((analysis, idx) => (
               <Card key={analysis.id} className="p-4 bg-card/50 border-border/50 backdrop-blur-sm">
@@ -255,7 +258,7 @@ export const ComparisonPage = ({ analyses, onBack }: ComparisonPageProps) => {
                   idx === 1 ? "bg-accent/20 text-accent border-accent mb-3" :
                   "bg-muted/20 mb-3"
                 }>
-                  Analyse {idx + 1}
+                  {t('comparison.analysis')} {idx + 1}
                 </Badge>
                 
                 <div className="space-y-3">
