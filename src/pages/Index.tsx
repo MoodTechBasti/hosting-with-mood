@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Hero } from "@/components/Hero";
 import { WizardProgress } from "@/components/WizardProgress";
+import { ResultsPage } from "@/components/ResultsPage";
 import { Step1 } from "@/components/wizard/Step1";
 import { Step2 } from "@/components/wizard/Step2";
 import { Step3 } from "@/components/wizard/Step3";
@@ -8,11 +9,14 @@ import { Step4 } from "@/components/wizard/Step4";
 import { Step5 } from "@/components/wizard/Step5";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { ProjectData } from "@/types/wizard";
+import { ProjectData, DecisionResult } from "@/types/wizard";
+import { calculateRecommendations } from "@/lib/scoringEngine";
 
 const Index = () => {
   const [showWizard, setShowWizard] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [result, setResult] = useState<DecisionResult | null>(null);
   const totalSteps = 5;
 
   const [projectData, setProjectData] = useState<ProjectData>({
@@ -51,7 +55,51 @@ const Index = () => {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      // Generate recommendations
+      const recommendations = calculateRecommendations(projectData);
+      setResult(recommendations);
+      setShowResults(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
+  };
+
+  const handleRestart = () => {
+    setShowWizard(false);
+    setShowResults(false);
+    setCurrentStep(1);
+    setResult(null);
+    setProjectData({
+      step1: {
+        projectType: [],
+        targetAudience: "",
+        mainGoal: "",
+        paymentModel: "",
+      },
+      step2: {
+        techType: [],
+        dataProcessing: "",
+        database: "",
+      },
+      step3: {
+        monthlyVisitors: "",
+        trafficSources: [],
+        downtimeTolerance: "",
+        performanceNeed: "",
+      },
+      step4: {
+        hostingBudget: "",
+        contractOwner: "",
+        maintenanceResponsibility: "",
+        clientTechAffinity: 2,
+      },
+      step5: {
+        dataProtectionLevel: "",
+        serverLocationPreference: "",
+        growthPotential: "",
+        projectLifetime: "",
+      },
+    });
   };
 
   const handlePrevious = () => {
@@ -93,6 +141,10 @@ const Index = () => {
 
   if (!showWizard) {
     return <Hero onStartWizard={() => setShowWizard(true)} />;
+  }
+
+  if (showResults && result) {
+    return <ResultsPage result={result} onRestart={handleRestart} />;
   }
 
   return (
