@@ -1,4 +1,5 @@
 import { CheckCircle2, Circle } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface WizardProgressProps {
   currentStep: number;
@@ -14,6 +15,16 @@ const stepLabels = [
 ];
 
 export const WizardProgress = ({ currentStep, totalSteps }: WizardProgressProps) => {
+  const { t } = useLanguage();
+  
+  const stepLabels = [
+    t('wizardProgress.steps.step1'),
+    t('wizardProgress.steps.step2'),
+    t('wizardProgress.steps.step3'),
+    t('wizardProgress.steps.step4'),
+    t('wizardProgress.steps.step5')
+  ];
+  
   return (
     <div className="w-full max-w-4xl mx-auto mb-12">
       {/* Progress Bar */}
@@ -73,7 +84,7 @@ export const WizardProgress = ({ currentStep, totalSteps }: WizardProgressProps)
       {/* Mobile: Only show current step label */}
       <div className="md:hidden text-center">
         <p className="text-sm text-muted-foreground">
-          Schritt {currentStep} von {totalSteps}
+          {t('wizardProgress.step')} {currentStep} {t('wizardProgress.of')} {totalSteps}
         </p>
         <p className="text-base text-primary font-medium mt-1">
           {stepLabels[currentStep - 1]}

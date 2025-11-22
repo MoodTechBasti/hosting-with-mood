@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { DollarSign, UserCog, Wrench, Brain } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Step4Props {
   data: WizardStep4;
@@ -39,18 +40,49 @@ const affinityLabels = [
 ];
 
 export const Step4 = ({ data, onChange }: Step4Props) => {
+  const { t } = useLanguage();
+  
+  const budgetRanges = [
+    { value: "0-5", label: "0-5 €", color: "text-green-400" },
+    { value: "5-15", label: "5-15 €", color: "text-blue-400" },
+    { value: "15-50", label: "15-50 €", color: "text-yellow-400" },
+    { value: ">50", label: ">50 €", color: "text-purple-400" },
+    { value: "Unklar", label: t('step4.contract.unclear'), color: "text-muted-foreground" }
+  ];
+
+  const contractOwners = [
+    { key: 'client', label: t('step4.contract.client') },
+    { key: 'agency', label: t('step4.contract.agency') },
+    { key: 'transfer', label: t('step4.contract.transfer') },
+    { key: 'unclear', label: t('step4.contract.unclear') }
+  ];
+
+  const maintenanceOptions = [
+    { key: 'client', label: t('step4.maintenanceOptions.client') },
+    { key: 'paid', label: t('step4.maintenanceOptions.paid') },
+    { key: 'unpaid', label: t('step4.maintenanceOptions.unpaid') },
+    { key: 'unclear', label: t('step4.maintenanceOptions.unclear') }
+  ];
+
+  const affinityLabels = [
+    t('step4.affinity.low'),
+    t('step4.affinity.medium'),
+    t('step4.affinity.high'),
+    t('step4.affinity.expert')
+  ];
+
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Budget & Verantwortung</h2>
-        <p className="text-muted-foreground">Finanzielle und organisatorische Rahmenbedingungen</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">{t('step4.title')}</h2>
+        <p className="text-muted-foreground">{t('step4.description')}</p>
       </div>
 
       <Card className="p-6 bg-card/50 border-border/50 backdrop-blur-sm space-y-6">
         <div className="space-y-4">
           <Label className="text-base font-medium flex items-center gap-2">
             <DollarSign className="w-5 h-5 text-primary" />
-            Hosting-Budget (monatlich)
+            {t('step4.hostingBudget')}
           </Label>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {budgetRanges.map((range) => (
@@ -75,22 +107,22 @@ export const Step4 = ({ data, onChange }: Step4Props) => {
           <div className="space-y-3">
             <Label className="text-base font-medium flex items-center gap-2">
               <UserCog className="w-5 h-5 text-accent" />
-              Vertragsbesitzer
+              {t('step4.contractOwner')}
             </Label>
             <div className="space-y-2">
               {contractOwners.map((owner) => (
                 <div
-                  key={owner}
+                  key={owner.key}
                   className={`
                     p-3 rounded-lg border cursor-pointer transition-all
-                    ${data.contractOwner === owner
+                    ${data.contractOwner === owner.key
                       ? 'border-accent bg-accent/10 text-accent'
                       : 'border-border hover:border-accent/50 bg-card/30'
                     }
                   `}
-                  onClick={() => onChange({ ...data, contractOwner: owner })}
+                  onClick={() => onChange({ ...data, contractOwner: owner.key })}
                 >
-                  <span className="text-sm">{owner}</span>
+                  <span className="text-sm">{owner.label}</span>
                 </div>
               ))}
             </div>
@@ -99,22 +131,22 @@ export const Step4 = ({ data, onChange }: Step4Props) => {
           <div className="space-y-3">
             <Label className="text-base font-medium flex items-center gap-2">
               <Wrench className="w-5 h-5 text-primary" />
-              Wartungsverantwortung
+              {t('step4.maintenance')}
             </Label>
             <div className="space-y-2">
               {maintenanceOptions.map((option) => (
                 <div
-                  key={option}
+                  key={option.key}
                   className={`
                     p-3 rounded-lg border cursor-pointer transition-all
-                    ${data.maintenanceResponsibility === option
+                    ${data.maintenanceResponsibility === option.key
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border hover:border-primary/50 bg-card/30'
                     }
                   `}
-                  onClick={() => onChange({ ...data, maintenanceResponsibility: option })}
+                  onClick={() => onChange({ ...data, maintenanceResponsibility: option.key })}
                 >
-                  <span className="text-sm">{option}</span>
+                  <span className="text-sm">{option.label}</span>
                 </div>
               ))}
             </div>
@@ -124,7 +156,7 @@ export const Step4 = ({ data, onChange }: Step4Props) => {
         <div className="space-y-4">
           <Label className="text-base font-medium flex items-center gap-2">
             <Brain className="w-5 h-5 text-accent" />
-            Technikaffinität Kunde
+            {t('step4.clientTech')}
           </Label>
           <div className="px-4 py-6 bg-background/50 rounded-lg border border-border">
             <Slider

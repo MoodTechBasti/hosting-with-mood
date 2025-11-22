@@ -7,6 +7,8 @@ import { CategoryScoresChart } from "./results/CategoryScoresChart";
 import { Download, RotateCcw, FileText, Share2 } from "lucide-react";
 import logo from "@/assets/logo-horizontal.svg";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 interface ResultsPageProps {
   result: DecisionResult;
@@ -14,8 +16,10 @@ interface ResultsPageProps {
 }
 
 export const ResultsPage = ({ result, onRestart }: ResultsPageProps) => {
+  const { t, language } = useLanguage();
+  
   const handleExportPDF = () => {
-    toast.info("PDF-Export wird in der nächsten Version verfügbar sein");
+    toast.info(t('results.pdfInfo'));
   };
 
   const handleExportJSON = () => {
@@ -28,36 +32,37 @@ export const ResultsPage = ({ result, onRestart }: ResultsPageProps) => {
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
     
-    toast.success("Empfehlungen als JSON exportiert");
+    toast.success(t('results.jsonExported'));
   };
 
   const handleShare = () => {
-    const summary = `Hosting-Empfehlung: ${result.recommendations[0].categoryName} - ${result.projectSummary}`;
+    const summary = `${t('results.topRecommendations')}: ${result.recommendations[0].categoryName} - ${result.projectSummary}`;
     
     if (navigator.share) {
       navigator.share({
-        title: 'Meine Hosting-Empfehlung',
+        title: t('results.title'),
         text: summary
       }).catch(() => {});
     } else {
       navigator.clipboard.writeText(summary);
-      toast.success("Zusammenfassung in Zwischenablage kopiert");
+      toast.success(t('results.copied'));
     }
   };
 
   return (
     <div className="min-h-screen bg-background py-12 px-4">
+      <LanguageToggle />
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-4 animate-fade-in">
           <img src={logo} alt="MoodTech Solutions" className="h-12 mx-auto mb-4" />
           <h1 className="text-4xl md:text-5xl font-bold">
             <span className="bg-gradient-primary bg-clip-text text-transparent">
-              Ihre Hosting-Empfehlungen
+              {t('results.title')}
             </span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Basierend auf Ihren Angaben haben wir die optimalen Hosting-Lösungen für Ihr Projekt identifiziert
+            {t('results.subtitle')}
           </p>
         </div>
 
@@ -66,7 +71,7 @@ export const ResultsPage = ({ result, onRestart }: ResultsPageProps) => {
           <div className="flex items-start gap-3">
             <FileText className="w-5 h-5 text-primary mt-1" />
             <div>
-              <h3 className="font-semibold text-foreground mb-1">Projekt-Zusammenfassung</h3>
+              <h3 className="font-semibold text-foreground mb-1">{t('results.projectSummary')}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {result.projectSummary}
               </p>
@@ -82,7 +87,7 @@ export const ResultsPage = ({ result, onRestart }: ResultsPageProps) => {
             className="border-border hover:bg-card/50"
           >
             <Download className="w-4 h-4 mr-2" />
-            Als PDF exportieren
+            {t('results.exportPDF')}
           </Button>
           <Button
             onClick={handleExportJSON}
@@ -90,7 +95,7 @@ export const ResultsPage = ({ result, onRestart }: ResultsPageProps) => {
             className="border-border hover:bg-card/50"
           >
             <FileText className="w-4 h-4 mr-2" />
-            Als JSON exportieren
+            {t('results.exportJSON')}
           </Button>
           <Button
             onClick={handleShare}
@@ -98,14 +103,14 @@ export const ResultsPage = ({ result, onRestart }: ResultsPageProps) => {
             className="border-border hover:bg-card/50"
           >
             <Share2 className="w-4 h-4 mr-2" />
-            Teilen
+            {t('results.share')}
           </Button>
           <Button
             onClick={onRestart}
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <RotateCcw className="w-4 h-4 mr-2" />
-            Neue Analyse starten
+            {t('results.newAnalysis')}
           </Button>
         </div>
 
@@ -119,7 +124,7 @@ export const ResultsPage = ({ result, onRestart }: ResultsPageProps) => {
         {/* Recommendations */}
         <div className="space-y-6 animate-fade-in-up delay-400">
           <h2 className="text-2xl font-bold text-foreground text-center">
-            Top 3 Empfehlungen
+            {t('results.topRecommendations')}
           </h2>
           <div className="grid grid-cols-1 gap-6">
             {result.recommendations.map((rec, idx) => (
@@ -141,7 +146,7 @@ export const ResultsPage = ({ result, onRestart }: ResultsPageProps) => {
         {result.researchedPrices && result.researchedPrices.length > 0 && (
           <Card className="p-6 bg-card/50 border-border/50 backdrop-blur-sm animate-fade-in-up delay-600">
             <h3 className="text-xl font-bold text-foreground mb-4">
-              🔍 Recherchierte Aktuelle Preise
+              {t('results.researchedPrices')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {result.researchedPrices.map((price, idx) => (
@@ -154,10 +159,10 @@ export const ResultsPage = ({ result, onRestart }: ResultsPageProps) => {
                     <div className="text-sm text-primary font-semibold">{price.currentPrice}</div>
                   </div>
                   <div className="text-xs text-muted-foreground mb-1">
-                    Quelle: <span className="text-foreground">{price.source}</span>
+                    {t('results.source')}: <span className="text-foreground">{price.source}</span>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Stand: {new Date(price.lastChecked).toLocaleDateString("de-DE")}
+                    {t('results.asOf')}: {new Date(price.lastChecked).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US')}
                   </div>
                   {price.notes && (
                     <div className="text-xs text-muted-foreground mt-2 italic">
@@ -173,10 +178,7 @@ export const ResultsPage = ({ result, onRestart }: ResultsPageProps) => {
         {/* Footer Note */}
         <Card className="p-6 bg-card/30 border-border/50 backdrop-blur-sm text-center animate-fade-in-up delay-700">
           <p className="text-sm text-muted-foreground">
-            <strong className="text-foreground">Wichtiger Hinweis:</strong> Diese Empfehlungen basieren auf
-            Ihren Angaben und allgemeinen Best Practices. Kosten und Verfügbarkeit können variieren.
-            Prüfen Sie vor der Entscheidung die aktuellen Anbieter-Websites und kontaktieren Sie uns
-            bei Fragen.
+            <strong className="text-foreground">{t('results.note')}:</strong> {t('results.noteText')}
           </p>
         </Card>
       </div>
