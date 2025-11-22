@@ -65,16 +65,16 @@ const Index = () => {
       toast.info("Generiere Empfehlungen...");
       const recommendations = calculateRecommendations(projectData);
       
-      // Research current prices with real web search (set to false for mock data)
-      toast.info("🔍 Recherchiere aktuelle Preise online...");
+      // Research current prices with LIVE web search
+      toast.info("🔍 Recherchiere aktuelle Preise von Anbieter-Websites...");
       try {
-        // useRealSearch = false für Mock-Daten, true für echte Web-Suche
-        const priceResearch = await researchProviderPrices(recommendations.recommendations, false);
+        // useRealSearch = true für echte Live-Recherche via Edge Function
+        const priceResearch = await researchProviderPrices(recommendations.recommendations, true);
         recommendations.researchedPrices = priceResearch;
-        toast.success(`✅ ${priceResearch.length} Anbieter-Preise recherchiert`);
+        toast.success(`✅ ${priceResearch.length} Anbieter-Preise live recherchiert`);
       } catch (error) {
         console.error("Preis-Recherche fehlgeschlagen:", error);
-        toast.error("Preis-Recherche fehlgeschlagen, fahre mit gespeicherten Daten fort");
+        toast.error("⚠️ Preis-Recherche fehlgeschlagen, verwende Fallback-Daten");
       }
       
       setResult(recommendations);

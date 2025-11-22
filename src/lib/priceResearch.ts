@@ -17,7 +17,7 @@ const providerSearchQueries: Record<string, string> = {
 };
 
 /**
- * Echte Online-Preis-Recherche mit web_search
+ * Echte Online-Preis-Recherche mit Edge Function
  * Diese Funktion ruft live die aktuellen Preise von Anbieter-Websites ab
  */
 export async function researchProviderPrices(
@@ -32,62 +32,60 @@ export async function researchProviderPrices(
     return getMockPriceResearch(recommendations, currentDate);
   }
 
-  // ECHTE WEB-SEARCH INTEGRATION
+  // ECHTE WEB-RECHERCHE via Edge Function
   console.log("🔍 Starte Live-Preis-Recherche für", recommendations.length, "Kategorien...");
 
-  for (const recommendation of recommendations) {
-    // Max 2 Provider pro Kategorie recherchieren
-    for (const provider of recommendation.providers.slice(0, 2)) {
-      try {
-        const query = providerSearchQueries[provider] || `${provider} hosting pricing 2025`;
-        
-        console.log(`🔎 Recherchiere Preise für: ${provider}`);
-        console.log(`   Query: ${query}`);
-
-        // HIER PASSIERT DIE ECHTE WEB-SUCHE
-        // Da ich als AI-Assistent keinen direkten Zugriff auf das web_search Tool habe,
-        // müsste dies vom Frontend/Backend aufgerufen werden.
-        // 
-        // In einer vollständigen Implementierung würde hier stehen:
-        // const searchResults = await fetch('/api/web-search', {
-        //   method: 'POST',
-        //   body: JSON.stringify({ query, numResults: 3 })
-        // });
-        // const data = await searchResults.json();
-        
-        // Für die Demo nutzen wir die Mock-Funktion, aber die Struktur ist bereit
-        const mockResult = extractPriceFromProvider(provider, currentDate);
-        
-        if (mockResult) {
-          results.push({
-            categoryId: recommendation.categoryId,
-            provider: provider,
-            currentPrice: mockResult.price,
-            source: mockResult.source,
-            lastChecked: currentDate,
-            notes: `✅ Live recherchiert: ${mockResult.notes}`
-          });
-          
-          console.log(`   ✅ Preis gefunden: ${mockResult.price}`);
-        }
-        
-        // Rate limiting: Kleine Pause zwischen Requests
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-      } catch (error) {
-        console.error(`❌ Fehler bei Recherche für ${provider}:`, error);
-        
-        // Fallback wenn Recherche fehlschlägt
-        results.push({
-          categoryId: recommendation.categoryId,
-          provider: provider,
-          currentPrice: "Preis aktuell nicht verfügbar",
-          source: "Recherche fehlgeschlagen",
-          lastChecked: currentDate,
-          notes: "Bitte offizielle Website prüfen"
-        });
+  try {
+    // Sammle alle Provider die recherchiert werden sollen
+    const providersToResearch: string[] = [];
+    const categoryMap: Record<string, string> = {};
+    
+    for (const recommendation of recommendations) {
+      // Max 2 Provider pro Kategorie
+      for (const provider of recommendation.providers.slice(0, 2)) {
+        providersToResearch.push(provider);
+        categoryMap[provider] = recommendation.categoryId;
       }
     }
+
+    console.log(`📡 Rufe Edge Function auf für ${providersToResearch.length} Provider...`);
+
+    // Rufe die Edge Function auf
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const response = await fetch(`${supabaseUrl}/functions/v1/price-research`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ providers: providersToResearch })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Edge Function Fehler: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    console.log(`✅ ${data.summary.successful}/${data.summary.total} Anbieter erfolgreich recherchiert`);
+
+    // Konvertiere Edge Function Ergebnisse zu PriceResearchResult Format
+    for (const result of data.results) {
+      results.push({
+        categoryId: categoryMap[result.provider],
+        provider: result.provider,
+        currentPrice: result.price,
+        source: result.source,
+        lastChecked: currentDate,
+        notes: result.success ? `✅ Live: ${result.notes}` : `⚠️ Fallback: ${result.notes}`
+      });
+    }
+
+  } catch (error) {
+    console.error("❌ Fehler bei Live-Recherche:", error);
+    
+    // Fallback zu Mock-Daten bei Fehler
+    console.log("⚠️ Verwende Mock-Daten als Fallback");
+    return getMockPriceResearch(recommendations, currentDate);
   }
 
   console.log(`✅ Preis-Recherche abgeschlossen: ${results.length} Anbieter`);
